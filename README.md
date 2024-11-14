@@ -43,7 +43,9 @@ All analysis will be conducted over different user and beer segments such as use
 
 We will try to use different features and combination of features to derive a notion of beer knowledge for each user at different points in time.
 
-<span style="background-color: red; color: white; padding: 0.4rem">TODO : explain Gini (diversity)</span>
+A first approach we considered is to use the Gini Impurity on the distribution of beer styles in the beer rated by each user at a given time. This would give us a value in $[0,1]$ measuring the diversity of beer styles rated by each user and therefore an estimate of its ability to accurately rate a wide range of beers.
+
+<span style="background-color: red; color: white; padding: 0.4rem">TODO (JEAN) : check Gini explaination</span>
 
 Another approach is to analyze the number of ratings and the user's review rate (number of reviews per unit of time). More specifically, looking at the timeframe during which the user was active on the website.
 
@@ -67,7 +69,13 @@ We will then use a distance metric to analyze the disparency between the text an
 
 ### 5. Are users influenced by current trends in beer consumption ?
 
-<span style="background-color: red; color: white; padding: 0.4rem">TODO : explain</span>
+t-test on ratings distribution of beer styles during trends and outside trends (assessment of global effect on population)
+
+OLS to measure impact of trends on ratings : trend_ratings = alpha + beta * no_trend_ratings ?
+
+Add it to the previous OLS ?
+
+Should trend take the ratings in addition to the ratings rate ?
 
 <span style="background-color: red; color: white; padding: 0.4rem">TODO : explain</span>
 
