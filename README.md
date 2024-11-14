@@ -4,25 +4,92 @@
 
 A 150 word description of the project idea and goals. What’s the motivation behind your project? What story would you like to tell, and why?
 
+<span style="background-color: red; color: white; padding: 0.4rem">TODO : explain</span>
+
 ## Research Questions
 
 A list of research questions you would like to address during the project.
 
+### 1. How can we quantify users' knowledge of beer?
+
+<span style="background-color: red; color: white; padding: 0.4rem">TODO : explain</span>
+
+### 2. Are users influenced by the past rating of the beer ?
+
+<span style="background-color: red; color: white; padding: 0.4rem">TODO : explain</span>
+
+### 3. Are users influenced by their past ratings ?
+
+<span style="background-color: red; color: white; padding: 0.4rem">TODO : explain</span>
+
+### 4. Are text reviews and user scores consistent with each other?
+
+<span style="background-color: red; color: white; padding: 0.4rem">TODO : explain</span>
+
+### 5. Are users influenced by current trends in beer consumption ?
+
+<span style="background-color: red; color: white; padding: 0.4rem">TODO : explain</span>
+
 ## Proposed additional datasets
 
-List the additional dataset(s) you want to use (if any), and some ideas on how you expect to get, manage, process, and enrich it/them. Show us that you’ve read the docs and some examples, and that you have a clear idea on what to expect. Discuss data size and format if relevant. It is your responsibility to check that what you propose is feasible.
+Current review data on the BeerAdvocate website ranges from August 1996 to August 2017. We thought of developing a scraper to retrieve more recent data from August 2017 to today. Nevertheless, after a preliminary analysis, we encountered more technical pitfalls. The site requires users to be authenticated to consult reviews, and imposes a rate limit on queries, which could complicate information retrieval.
 
 ## Methods
 
-Methods
+
+All analysis will be conducted over different user and beer segments such as user country, user knowledge, beer country or beer style.
+
+### 1. How can we quantify users' knowledge of beer?
+
+We will try to use different features and combination of features to derive a notion of beer knowledge for each user at different points in time.
+
+<span style="background-color: red; color: white; padding: 0.4rem">TODO : explain Gini (diversity)</span>
+
+Another approach is to analyze the number of ratings and the user's review rate (number of reviews per unit of time). More specifically, looking at the timeframe during which the user was active on the website.
+
+A further method would be to analyze the texts backing up the ratings, assuming that the length of the text and the use of  keywords from the beer lexical field would be a good indicator of knowledge. This list of keywords would be created manually by researching the beer industry.
+
+### 2. Are users influenced by the past rating of the beer ?
+
+<span style="background-color: red; color: white; padding: 0.4rem">TODO : explain</span>
+
+OLS + F_test => effect mixed
+
+### 3. Are users influenced by their past ratings ?
+
+<span style="background-color: red; color: white; padding: 0.4rem">TODO : explain</span>
+
+### 4. Are text reviews and user scores consistent with each other?
+
+In order to compare the similarity of textual reviews and scores, we will use an NLP model for sentiment analysis. More specifically, we found the model `nlptown/bert-base-multilingual-uncased-sentiment` which predict the sentiment of a review as an integer in $[1,5]$ which corresponds to the same range as the scores given by the users.
+
+We will then use a distance metric to analyze the disparency between the text and the score. Those differences could be assesed using hypothesis testing where null hypothesis would be that their is no difference between means.
+
+### 5. Are users influenced by current trends in beer consumption ?
+
+<span style="background-color: red; color: white; padding: 0.4rem">TODO : explain</span>
+
+<span style="background-color: red; color: white; padding: 0.4rem">TODO : explain</span>
 
 ## Proposed Timeline
 
-Proposed timeline
+<span style="background-color: red; color: white; padding: 0.4rem">TODO : explain</span>
+
+| Period | Description |
+|---|---|
+| Week 1 : 18/11 - 24/11 | |
+| Week 2 : 25/11 - 01/12 | |
+| Week 3 : 02/12 - 08/12 | |
+| Week 4 : 09/12 - 15/12 | |
+| Week 5 : 16/12 - 20/12 | |
 
 ## Organization within the team
 
+<span style="background-color: red; color: white; padding: 0.4rem">TODO : explain</span>
+
 ## Instructions
+
+<span style="background-color: red; color: white; padding: 0.4rem">TODO : preprocessing</span>
 
 Please download the datasets by folowing these commands :
 ```bash
