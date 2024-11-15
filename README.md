@@ -2,7 +2,7 @@
 
 ##  📄 Abstract
 
-At the core of the project is the idea of exploring the influence of various factors on the ratings left by users, so as to gain a better understanding of the final ratings we can consult by visiting Beer Advocate or Rate Beer. In other words, what secrets do the ratings conceal? The goal of the project is therefore to identify several factors that may affect reviews, and to test our hypotheses against the data.
+The core of the project is the idea of exploring the influence of various factors on the ratings left by users, so as to gain a better understanding of the final ratings we can consult by visiting Beer Advocate or Rate Beer. In other words, what secrets do the ratings conceal? The goal of the project is therefore to identify several factors that may affect reviews, and to test our hypotheses against the data.
 
 The motivation behind the project came from an informal discussion within the team about our disagreements over the ratings of certain movies. When it came time to come up with an idea for the project, we wanted to transpose our thoughts on the film question onto beer reviews. Let's embark on an adventure and find out as we go along that the ratings you use to pick your next beer may not be so truthful after all!
 
@@ -22,19 +22,22 @@ The questions we intend to answer concern various factors that could influence r
 
 Our datasets are composed on information from two websites,  BeerAdvocate and RateBeer. Current review data ranges from August 1996 to August 2017 for BeerAdvocate and April 2000 to August 2017 for RateBeer. 
 
-We thought of developing a scraper to retrieve more recent data from August 2017 to today. Nevertheless, after a preliminary analysis, we encountered some technical pitfalls. Indeed, the websites require users to be authenticated to consult reviews, and maybe impose a rate limit on queries, which could complicate information retrieval (or at least make it very slow).
-
+We thought of developing a scraper to retrieve more recent data from August 2017 to today. Nevertheless, after a preliminary analysis, we encountered some technical pitfalls. Indeed, the websites require users to be authenticated to consult reviews, and maybe impose a rate limit on queries, which could complicate information retrieval.
 ## 🎛️ Methods
 
-Our analyses will attempt to answer the questions presented above, and for questions 2 to 5, they will also be carried out on different segments of users and beers such as the user's country, knowledge of beers, country of the beer, style of beer, etc.
+Our analyses will attempt to answer the questions presented above, and for questions 2 to 5, they will also be carried out on different segments of users and beers such as the user's country, knowledge of beers, country of the beer, style of beer, etc. 
+
+All our analyses will be conducted separately on the data from each website, and the results will be compared to determine whether they are consistent across the two websites.
+
+
 
 ### 1. How can we quantify users' knowledge of beer?
 
 We will try to use different features and combination of features to derive a notion of beer knowledge for each user at different points in time.
 
-Our first approach is to analyze the number of ratings and the user's review rate (number of reviews per unit of time). More specifically, looking at the timeframe during which the user was active on the website.
+Our first approach is to analyze the number of ratings and the user's review rate over time. More specifically, looking at the timeframe during which the user was active on the website.
 
-The second approach we considered was to quantify the extent to which a user had tasted different styles of beer. To achieve this, we computed the normalized Gini impurity over the number of beers rated within each style at a given time. We thus obtain a metric in $[0, 1]$ where $0$ means that the user has rated only one style of beer and $1$ means that the user has rated as many beers of each style.
+The second approach we considered was to quantify the extent to which a user had tasted different styles of beer. We computed the normalized Gini impurity over the number of beers rated within each style at a given time. We thus obtain a metric in $[0, 1]$ where $0$ means that the user has rated only one style of beer and $1$ means that the user has rated as many beers of each style.
 
 A third approach would be to analyze the texts backing up the ratings, assuming that the length of the text and the use of keywords from the beer lexical field would be a good indicator of knowledge. This list of keywords would be created manually by researching on the beer industry.
 
@@ -47,19 +50,19 @@ We believe that the effects of these 2 hypotheses may be correlated, and we ther
 
 After preliminary analyses, we performed an F-test on the coefficient of the interaction term at the $\alpha=0.01$ threshold. The test concluded on the rejection of the null hypothesis, so it seems that the interaction of the 2 effects is statistically significant.
 
-We will analyse the results of the linear regression in more detail, and add other parameters to observe their effects (e.g. past average by beer style).
+We will analyse the results of the linear regression in more details, and add other parameters to observe their effects (e.g. past average by beer style).
 
 ### 4. Are text reviews and user scores consistent with each other?
 
 In order to compare the similarity of textual reviews and scores, we will use an NLP model for sentiment analysis. More specifically, we found the model `nlptown/bert-base-multilingual-uncased-sentiment` [^1] which predict the sentiment of a review as an integer in $[1,5]$ which corresponds to the same range as the scores given by the users.
 
-We will then use a distance metric to analyze the disparency between the text and the score. Those differences could be assesed using hypothesis testing where null hypothesis would be that their is no difference between means.
+We will then use a distance metric to analyze the disparency between the text and the score. Those differences could be assesed using hypothesis testing where null hypothesis would be that there is no difference between means.
 
 ### 5. Are users influenced by current trends in beer consumption ?
 
 In order to analyze the impact of trends on scores, we first need to identify trends. We intend to use a hybrid approach:
-- Manually identify trends via research on news sites, brewery reports and market studies
-- Automatically identify trends by analyzing the number of ratings for a certain style of beer as a function of the number of active users on the site.
+- Manually identify trends via research on news sites and market studies
+- Automatically identify trends by analyzing the number of ratings for a certain style of beer as a function of the number of active users.
 
 We will define the active status of a user according to parameters such as his review rate, the date since his last review and other parameters.
 
