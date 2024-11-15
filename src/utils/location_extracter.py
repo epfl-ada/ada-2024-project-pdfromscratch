@@ -2,10 +2,10 @@ import pandas as pd
 from thefuzz import process
 import json
 
-DF_ISO_CODES = pd.read_csv('src/utils/iso_codes.csv')[['name', 'alpha-3']]
+DF_ISO_CODES = pd.read_csv('src/data/iso_codes.csv')[['name', 'alpha-3']]
 
 # Map region to country (useful when we only have the region)
-with open('region_to_country.json', 'r') as region_to_country_file:
+with open('src/data/region_to_country.json', 'r') as region_to_country_file:
     REGION_TO_COUNTRY = json.load(region_to_country_file)
 
 
@@ -16,7 +16,7 @@ def get_closest_match_or_none(query: str, serie_choices: pd.Series, serie_values
         return serie_values[serie_choices == match].values[0]
     return None
 
-def format_location(serie_locations: pd.Series) -> tuple[pd.Series, pd.Series, pd.Series]:
+def extract_location(serie_locations: pd.Series) -> tuple[pd.Series, pd.Series, pd.Series]:
     serie_locations.replace({
         'UNKNOWN': pd.NA,
         'Swaziland': 'Esawtini',                                                # Swaziland changed its name to Esawtini
