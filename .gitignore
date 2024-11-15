@@ -1,3 +1,5 @@
 raw_data/*
-data/*
+src/data/*
 .vscode
+**/__pycache__/*
+src/scripts/txt_to_csv
