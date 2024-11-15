@@ -6,6 +6,8 @@ At the core of the project is the idea of exploring the influence of various fac
 
 The motivation behind the project came from an informal discussion within the team about our disagreements over the ratings of certain movies. When it came time to come up with an idea for the project, we wanted to transpose our thoughts on the film question onto beer reviews. Let's embark on an adventure and find out as we go along that the ratings you use to pick your next beer may not be so truthful after all!
 
+<img src="src/data/meme.jpg" width="400px"/>
+
 ## 🔍 Research Questions
 
 The questions we intend to answer concern various factors that could influence ratings.
