@@ -1,4 +1,4 @@
-# 🍻 Truth behing ratings 🍻
+# 🍻 Truth behind ratings 🍻
 
 ##  📄 Abstract
 
