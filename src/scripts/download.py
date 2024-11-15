@@ -3,8 +3,12 @@ import subprocess
 import os
 import sys
 
+if len(sys.argv) != 2:
+    print(f"Usage: {sys.argv[0]} <raw data path>")
+    sys.exit(1)
+
+PATH = sys.argv[1]
 SAFE_MODE = False
-PATH = '../../raw_data'
 DATASETS = [
     (
         'BeerAdvocate.tar.gz', 
@@ -30,8 +34,6 @@ DATASETS = [
         [('ratings.txt.gz', 'ratings.txt'), ('reviews.txt.gz', 'reviews.txt')]
     )
 ]
-
-subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'gdown'])
 
 os.makedirs(PATH, exist_ok=True)
 

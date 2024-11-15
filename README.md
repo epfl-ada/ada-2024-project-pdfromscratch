@@ -35,6 +35,7 @@ Our first approach is to analyze the number of ratings and the user's review rat
 The second approach we considered was to quantify the extent to which a user had tasted different styles of beer. To achieve this, we computed the normalized Gini impurity over the number of beers rated within each style at a given time. We thus obtain a metric in $[0, 1]$ where $0$ means that the user has rated only one style of beer and $1$ means that the user has rated as many beers of each style.
 
 Let $\mathcal S$ be the set of beer styles, then the Gini impurity $G$ is computed as
+
 $$G=\frac{1 - \sum_{s \in \mathcal S} p_s^2}{1 - \frac{1}{|\mathcal S|}}$$
 
 A third approach would be to analyze the texts backing up the ratings, assuming that the length of the text and the use of keywords from the beer lexical field would be a good indicator of knowledge. This list of keywords would be created manually by researching on the beer industry.
