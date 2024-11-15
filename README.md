@@ -49,7 +49,7 @@ We will analyse the results of the linear regression in more detail, and add oth
 
 ### 4. Are text reviews and user scores consistent with each other?
 
-In order to compare the similarity of textual reviews and scores, we will use an NLP model for sentiment analysis. More specifically, we found the model `nlptown/bert-base-multilingual-uncased-sentiment` which predict the sentiment of a review as an integer in $[1,5]$ which corresponds to the same range as the scores given by the users.
+In order to compare the similarity of textual reviews and scores, we will use an NLP model for sentiment analysis. More specifically, we found the model `nlptown/bert-base-multilingual-uncased-sentiment` [^1] which predict the sentiment of a review as an integer in $[1,5]$ which corresponds to the same range as the scores given by the users.
 
 We will then use a distance metric to analyze the disparency between the text and the score. Those differences could be assesed using hypothesis testing where null hypothesis would be that their is no difference between means.
 
@@ -108,3 +108,7 @@ pip install -r pip_requirements.txt
 ├── pip_requirements.txt        <- File for installing python dependencies
 └── README.md
 ```
+
+## References
+
+[^1]: NLP Town (2023). HugginFace - nlptown/bert-base-multilingual-uncased-sentiment. Available : https://huggingface.co/nlptown/bert-base-multilingual-uncased-sentiment
