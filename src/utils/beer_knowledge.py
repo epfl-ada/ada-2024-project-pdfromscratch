@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 
-def number_of_beer_per_style(year: int, df_ratings: pd.DataFrame):
+def number_of_beer_per_style(df_ratings: pd.DataFrame) -> pd.DataFrame:
     df_beer_first_app = (
         df_ratings[["beer_id", "date_day", "beer_global_style"]]
         .groupby(["beer_global_style", "beer_id"])
@@ -32,16 +32,18 @@ def number_of_beer_per_style(year: int, df_ratings: pd.DataFrame):
         axis=1,
     )
 
-    style_columns = [
-        col for col in df_current_beer_per_style.columns if col != "date_day"
-    ]
+    df_dates = pd.DataFrame(
+        {
+            "date_day": pd.date_range(
+                start=pd.to_datetime(df_ratings["date_day"].min()),
+                end=pd.to_datetime(df_ratings["date_day"].max()),
+                freq="D",
+            )
+        }
+    )
+    df_current_beer_per_style = df_dates.merge(df_current_beer_per_style, how="left", on="date_day").sort_values(by="date_day").ffill()
 
-    df_current_beer_per_style.loc[
-        df_current_beer_per_style["date_day"] < f"{year}-01-01", style_columns
-    ] = np.nan
-    df_current_beer_per_style_year = df_current_beer_per_style.bfill()
-
-    return df_current_beer_per_style_year
+    return df_current_beer_per_style
 
 
 def add_global_knowledge(
@@ -70,11 +72,6 @@ def add_global_knowledge(
     df_users_past_beer_style = df_users_past_beer_style.merge(
         df_mean_beers, how="left", on="date_day"
     )
-
-    df_users_past_beer_style.sort_values(by="date_day", inplace=True)
-    df_users_past_beer_style["mean_beers"] = df_users_past_beer_style[
-        "mean_beers"
-    ].ffill()
 
     df_users_past_beer_style.loc[
         df_users_past_beer_style["style_tried"] == 0, "mean_beer_tried"
@@ -167,7 +164,7 @@ def get_expert_per_day(
     max_available_beer_per_day: pd.DataFrame,
     expert_columns: list,
     count_columns: list,
-):
+) -> pd.DataFrame:
     df_dates = pd.DataFrame(
         {
             "date_day": pd.date_range(
@@ -233,7 +230,7 @@ def get_global_expert_per_day(
     df_ratings: pd.DataFrame,
     df_knowledge: pd.DataFrame,
     df_users_past_beer_style: pd.DataFrame,
-):
+) -> pd.DataFrame:
     df_best_global_per_user = (
         df_knowledge[["user_id", "global_knowledge"]]
         .groupby("user_id")
@@ -305,112 +302,3 @@ def get_global_expert_per_day(
     )
 
     return global_active_user_per_day
-
-
-def add_favorite_beer_style(
-    df_users_past_beer_style: pd.DataFrame,
-    count_columns: list,
-    average_columns: list,
-    w: float,
-    alpha: float,
-):
-    df_users_past_beer_style.loc[:, "Total_count"] = df_users_past_beer_style[
-        count_columns
-    ].sum(axis=1)
-    df_users_past_beer_style.loc[
-        df_users_past_beer_style["Total_count"] >= 10, "ratedSingleStyle"
-    ] = (
-        np.sum(
-            np.sign(
-                df_users_past_beer_style.loc[
-                    df_users_past_beer_style["Total_count"] >= 10, count_columns
-                ]
-            ),
-            axis=1,
-        )
-        == 1
-    ).astype(
-        int
-    )
-
-    condition = (df_users_past_beer_style["Total_count"] >= 10) & (
-        df_users_past_beer_style["ratedSingleStyle"] == 0
-    )
-
-    users_ids = df_users_past_beer_style.loc[condition, ["user_id", "date"]]
-
-    norm_counts = (
-        df_users_past_beer_style.loc[condition, count_columns]
-        .subtract(
-            df_users_past_beer_style.loc[condition, count_columns].min(axis=1), axis=0
-        )
-        .div(
-            df_users_past_beer_style.loc[condition, count_columns].max(axis=1)
-            - df_users_past_beer_style.loc[condition, count_columns].min(axis=1),
-            axis=0,
-        )
-    )
-    norm_averages = (
-        df_users_past_beer_style.loc[condition, average_columns]
-        .subtract(
-            df_users_past_beer_style.loc[condition, average_columns].min(axis=1), axis=0
-        )
-        .div(
-            df_users_past_beer_style.loc[condition, average_columns].max(axis=1)
-            - df_users_past_beer_style.loc[condition, average_columns].min(axis=1),
-            axis=0,
-        )
-        .fillna(0)
-    )
-
-    df_score = pd.DataFrame(
-        w * norm_averages.values + (1 - w) * norm_counts.values, index=users_ids.index
-    )
-
-    threshold = (
-        df_users_past_beer_style.loc[condition, count_columns].max(axis=1) * alpha
-    )
-    mask = pd.DataFrame(
-        df_users_past_beer_style.loc[condition, count_columns]
-        .gt(threshold, axis=0)
-        .values,
-        index=users_ids.index,
-    )
-
-    df_score = df_score.where(mask, 0).rename(
-        columns={
-            0: "Bock",
-            1: "Brown Ale",
-            2: "Dark Ales",
-            3: "Dark Lager",
-            4: "Hybrid Beer",
-            5: "India Pale Ale",
-            6: "Pale Ale",
-            7: "Pale Lager",
-            8: "Porter",
-            9: "Speciality Beer",
-            10: "Stout",
-            11: "Strong Ale",
-            12: "Wheat Beer",
-            13: "Wild/Sour Beer",
-        }
-    )
-
-    df_users_past_beer_style.loc[condition, "Favorite_Beer_Style"] = df_score.idxmax(
-        axis=1
-    )
-    df_users_past_beer_style.loc[
-        (df_users_past_beer_style["Total_count"] >= 10)
-        & (df_users_past_beer_style["ratedSingleStyle"] == 1),
-        "Favorite_Beer_Style",
-    ] = (
-        df_users_past_beer_style.loc[
-            (df_users_past_beer_style["Total_count"] >= 10)
-            & (df_users_past_beer_style["ratedSingleStyle"] == 1),
-            count_columns,
-        ]
-        .idxmax(axis=1)
-        .apply(lambda x: x.split("_")[-2])
-    )
-
-    return df_users_past_beer_style
