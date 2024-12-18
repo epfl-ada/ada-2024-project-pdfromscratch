@@ -51,6 +51,7 @@ def add_global_knowledge(
     df_users_past_beer_style: pd.DataFrame,
     count_columns: list,
 ) -> tuple[pd.DataFrame]:
+    n_beer_style = len(count_columns)
     df_mean_beers = pd.concat(
         [
             df_current_beer_per_style_year["date_day"],
@@ -63,7 +64,7 @@ def add_global_knowledge(
         df_users_past_beer_style[count_columns]
     ).sum(axis=1)
     df_users_past_beer_style["style_tried_share"] = (
-        df_users_past_beer_style["style_tried"] / 14
+        df_users_past_beer_style["style_tried"] / n_beer_style
     )
     df_users_past_beer_style["mean_beer_tried"] = (
         df_users_past_beer_style[count_columns].sum(axis=1)
@@ -95,7 +96,7 @@ def add_local_knowledge(
     df_users_past_beer_style = df_users_past_beer_style.merge(
         df_current_beer_per_style_year, how="left", on="date_day"
     )
-    df_users_past_beer_style.sort_values(by="date_day", inplace=True)
+    df_users_past_beer_style.sort_values(by=["user_id","date_day"]+count_columns)
     df_users_past_beer_style[max_columns] = df_users_past_beer_style[
         max_columns
     ].ffill()
@@ -139,12 +140,12 @@ def add_local_knowledge(
 
 
 def add_experts(
-    df_local_knowledge: pd.DataFrame, df_users_past_beer_style: pd.DataFrame
+    df_local_knowledge: pd.DataFrame, df_users_past_beer_style: pd.DataFrame, quantile_thresh: float,
 ) -> tuple[pd.DataFrame]:
     df_best_local_per_user = (
         df_local_knowledge.iloc[:, :-1].groupby("user_id").max().reset_index()
     )
-    local_knowledge_quantile_expert = df_best_local_per_user.iloc[:, 1:].quantile(0.99)
+    local_knowledge_quantile_expert = df_best_local_per_user.iloc[:, 1:].quantile(quantile_thresh)
     above_percentiles = (
         df_local_knowledge.iloc[:, :-2]
         .gt(local_knowledge_quantile_expert, axis=1)
