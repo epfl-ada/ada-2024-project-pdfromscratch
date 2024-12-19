@@ -127,12 +127,12 @@ def add_local_knowledge(
         inplace=True,
     )
     df_local_knowledge = df_local_knowledge.merge(
-        df_users_past_beer_style[["user_id", "date_day"]],
+        df_users_past_beer_style[["user_id", "date_day","beer_id"]],
         how="inner",
         left_index=True,
         right_index=True,
     )
-    df_users_past_beer_style["local_knowledge"] = df_local_knowledge.iloc[:, :-2].max(
+    df_users_past_beer_style["local_knowledge"] = df_local_knowledge.iloc[:, :-3].max(
         axis=1
     )
 
