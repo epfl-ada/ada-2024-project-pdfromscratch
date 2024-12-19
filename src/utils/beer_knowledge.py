@@ -4,7 +4,7 @@ import numpy as np
 
 def number_of_beer_per_style(df_ratings: pd.DataFrame) -> pd.DataFrame:
     df_beer_first_app = (
-        df_ratings[["beer_id", "date_day", "beer_global_style"]]
+        df_ratings[["beer_id", "day", "beer_global_style"]]
         .groupby(["beer_global_style", "beer_id"])
         .min()
         .reset_index()
@@ -19,29 +19,29 @@ def number_of_beer_per_style(df_ratings: pd.DataFrame) -> pd.DataFrame:
         axis=1,
     ).drop(["beer_global_style", "beer_id"], axis=1)
     df_new_beer_per_day_style = (
-        df_beer_first_app.groupby("date_day")
+        df_beer_first_app.groupby("day")
         .sum()
-        .sort_values(by="date_day")
+        .sort_values(by="day")
         .reset_index()
     )
     df_current_beer_per_style = pd.concat(
         [
-            df_new_beer_per_day_style["date_day"],
-            df_new_beer_per_day_style.drop("date_day", axis=1).cumsum(),
+            df_new_beer_per_day_style["day"],
+            df_new_beer_per_day_style.drop("day", axis=1).cumsum(),
         ],
         axis=1,
     )
 
     df_dates = pd.DataFrame(
         {
-            "date_day": pd.date_range(
-                start=pd.to_datetime(df_ratings["date_day"].min()),
-                end=pd.to_datetime(df_ratings["date_day"].max()),
+            "day": pd.date_range(
+                start=pd.to_datetime(df_ratings["day"].min()),
+                end=pd.to_datetime(df_ratings["day"].max()),
                 freq="D",
             )
         }
     )
-    df_current_beer_per_style = df_dates.merge(df_current_beer_per_style, how="left", on="date_day").sort_values(by="date_day").ffill()
+    df_current_beer_per_style = df_dates.merge(df_current_beer_per_style, how="left", on="day").sort_values(by="day").ffill()
 
     return df_current_beer_per_style
 
@@ -54,7 +54,7 @@ def add_global_knowledge(
     n_beer_style = len(count_columns)
     df_mean_beers = pd.concat(
         [
-            df_current_beer_per_style_year["date_day"],
+            df_current_beer_per_style_year["day"],
             df_current_beer_per_style_year.iloc[:, 1:].mean(axis=1),
         ],
         axis=1,
@@ -71,7 +71,7 @@ def add_global_knowledge(
         / df_users_past_beer_style["style_tried"]
     )
     df_users_past_beer_style = df_users_past_beer_style.merge(
-        df_mean_beers, how="left", on="date_day"
+        df_mean_beers, how="left", on="day"
     )
 
     df_users_past_beer_style.loc[
@@ -94,9 +94,9 @@ def add_local_knowledge(
     count_columns: list,
 ) -> tuple[pd.DataFrame]:
     df_users_past_beer_style = df_users_past_beer_style.merge(
-        df_current_beer_per_style_year, how="left", on="date_day"
+        df_current_beer_per_style_year, how="left", on="day"
     )
-    df_users_past_beer_style.sort_values(by=["user_id","date_day"]+count_columns)
+    df_users_past_beer_style.sort_values(by=["user_id","day"]+count_columns)
     df_users_past_beer_style[max_columns] = df_users_past_beer_style[
         max_columns
     ].ffill()
@@ -127,7 +127,7 @@ def add_local_knowledge(
         inplace=True,
     )
     df_local_knowledge = df_local_knowledge.merge(
-        df_users_past_beer_style[["user_id", "date_day","beer_id"]],
+        df_users_past_beer_style[["user_id", "day","beer_id"]],
         how="inner",
         left_index=True,
         right_index=True,
@@ -168,9 +168,9 @@ def get_expert_per_day(
 ) -> pd.DataFrame:
     df_dates = pd.DataFrame(
         {
-            "date_day": pd.date_range(
-                start=pd.to_datetime(df_ratings["date_day"].min()),
-                end=pd.to_datetime(df_ratings["date_day"].max()),
+            "day": pd.date_range(
+                start=pd.to_datetime(df_ratings["day"].min()),
+                end=pd.to_datetime(df_ratings["day"].max()),
                 freq="D",
             )
         }
@@ -179,28 +179,28 @@ def get_expert_per_day(
         df_users_past_beer_style[expert_columns].sum(axis=1) >= 1, "user_id"
     ].drop_duplicates()
     df_expert_dates = df_dates.merge(
-        max_available_beer_per_day, how="left", on="date_day"
+        max_available_beer_per_day, how="left", on="day"
     ).ffill()
     df_expert_dates = df_expert_dates.merge(ever_local_expert, how="cross")
     df_expert_dates = df_expert_dates.merge(
-        df_users_past_beer_style[count_columns + ["user_id", "date_day"]],
+        df_users_past_beer_style[count_columns + ["user_id", "day"]],
         how="left",
-        on=["user_id", "date_day"],
+        on=["user_id", "day"],
     )
     df_expert_dates.loc[
-        (df_expert_dates["date_day"] == "1996-08-22")
+        (df_expert_dates["day"] == "1996-08-22")
         & (df_expert_dates["user_id"] != "todd.2"),
         count_columns,
     ] = 0
     filled_expert = (
-        df_expert_dates.sort_values(by=["user_id", "date_day"])
+        df_expert_dates.sort_values(by=["user_id", "day"])
         .groupby("user_id")
         .ffill()
     )
     filled_expert = filled_expert.merge(
         df_expert_dates["user_id"], left_index=True, right_index=True, how="left"
     )
-    filled_expert = filled_expert.groupby(["user_id", "date_day"]).max().reset_index()
+    filled_expert = filled_expert.groupby(["user_id", "day"]).max().reset_index()
 
     filled_columns = filled_expert.columns
 
@@ -218,9 +218,9 @@ def get_expert_per_day(
 
     expert_per_day = (
         comparison_df.merge(
-            filled_expert["date_day"], how="inner", left_index=True, right_index=True
+            filled_expert["day"], how="inner", left_index=True, right_index=True
         )
-        .groupby("date_day")
+        .groupby("day")
         .sum()
         .reset_index()
     )
@@ -244,20 +244,20 @@ def get_global_expert_per_day(
 
     df_dates = pd.DataFrame(
         {
-            "date_day": pd.date_range(
-                start=pd.to_datetime(df_ratings["date_day"].min()),
-                end=pd.to_datetime(df_ratings["date_day"].max()),
+            "day": pd.date_range(
+                start=pd.to_datetime(df_ratings["day"].min()),
+                end=pd.to_datetime(df_ratings["day"].max()),
                 freq="D",
             )
         }
     )
     df_dates = (
         df_dates.merge(
-            df_users_past_beer_style[["date_day", "mean_beers"]].drop_duplicates(),
+            df_users_past_beer_style[["day", "mean_beers"]].drop_duplicates(),
             how="left",
-            on="date_day",
+            on="day",
         )
-        .sort_values(by="date_day")
+        .sort_values(by="day")
         .ffill()
     )
     ever_global_expert = df_knowledge.loc[
@@ -267,13 +267,13 @@ def get_global_expert_per_day(
     df_global_expert_dates = df_dates.merge(ever_global_expert, how="cross")
     df_global_expert_dates = df_global_expert_dates.merge(
         df_users_past_beer_style[
-            ["user_id", "date_day", "style_tried_share", "mean_beer_tried"]
+            ["user_id", "day", "style_tried_share", "mean_beer_tried"]
         ],
         how="left",
-        on=["user_id", "date_day"],
+        on=["user_id", "day"],
     )
     filled_global_expert = (
-        df_global_expert_dates.sort_values(by=["user_id", "date_day"])
+        df_global_expert_dates.sort_values(by=["user_id", "day"])
         .groupby("user_id")
         .ffill()
         .bfill()
@@ -292,12 +292,12 @@ def get_global_expert_per_day(
     ).astype(int)
 
     global_active_user_per_day = (
-        filled_global_expert[["user_id", "date_day", "active_expert"]]
-        .groupby(["user_id", "date_day"])
+        filled_global_expert[["user_id", "day", "active_expert"]]
+        .groupby(["user_id", "day"])
         .max()
         .reset_index()
         .iloc[:, 1:]
-        .groupby("date_day")
+        .groupby("day")
         .sum()
         .reset_index()
     )
