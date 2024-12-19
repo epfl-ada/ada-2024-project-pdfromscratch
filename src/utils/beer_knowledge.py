@@ -145,9 +145,9 @@ def add_experts(
     df_best_local_per_user = (
         df_local_knowledge.iloc[:, :-1].groupby("user_id").max().reset_index()
     )
-    local_knowledge_quantile_expert = df_best_local_per_user.iloc[:, 1:].quantile(quantile_thresh)
+    local_knowledge_quantile_expert = df_best_local_per_user.iloc[:, 1:-1].quantile(quantile_thresh)
     above_percentiles = (
-        df_local_knowledge.iloc[:, :-2]
+        df_local_knowledge.iloc[:, :-3]
         .gt(local_knowledge_quantile_expert, axis=1)
         .astype(int)
     )
@@ -159,10 +159,10 @@ def add_experts(
     return df_users_past_beer_style, local_knowledge_quantile_expert
 
 
-def get_expert_per_date_day(
+def get_expert_per_day(
     df_ratings: pd.DataFrame,
     df_users_past_beer_style: pd.DataFrame,
-    max_available_beer_per_date_day: pd.DataFrame,
+    max_available_beer_per_day: pd.DataFrame,
     expert_columns: list,
     count_columns: list,
 ) -> pd.DataFrame:
@@ -179,7 +179,7 @@ def get_expert_per_date_day(
         df_users_past_beer_style[expert_columns].sum(axis=1) >= 1, "user_id"
     ].drop_duplicates()
     df_expert_dates = df_dates.merge(
-        max_available_beer_per_date_day, how="left", on="day"
+        max_available_beer_per_day, how="left", on="day"
     ).ffill()
     df_expert_dates = df_expert_dates.merge(ever_local_expert, how="cross")
     df_expert_dates = df_expert_dates.merge(
@@ -216,7 +216,7 @@ def get_expert_per_date_day(
 
     comparison_df = pd.DataFrame(comparison_results).astype(int)
 
-    expert_per_date_day = (
+    expert_per_day = (
         comparison_df.merge(
             filled_expert["day"], how="inner", left_index=True, right_index=True
         )
@@ -224,10 +224,10 @@ def get_expert_per_date_day(
         .sum()
         .reset_index()
     )
-    return expert_per_date_day
+    return expert_per_day
 
 
-def get_global_expert_per_date_day(
+def get_global_expert_per_day(
     df_ratings: pd.DataFrame,
     df_knowledge: pd.DataFrame,
     df_users_past_beer_style: pd.DataFrame,
@@ -302,4 +302,4 @@ def get_global_expert_per_date_day(
         .reset_index()
     )
 
-    return global_active_user_per_date_day
+    return global_active_user_per_day
