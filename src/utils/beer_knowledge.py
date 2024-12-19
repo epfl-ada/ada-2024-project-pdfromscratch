@@ -106,7 +106,7 @@ def add_local_knowledge(
         / df_users_past_beer_style[max_columns].values
     )
 
-    df_local_knowledge = np.pow(df_shares_by_style, 1 / 3)
+    df_local_knowledge = np.power(df_shares_by_style, 1 / 3)
     df_local_knowledge.rename(
         columns={
             0: "Bock",
