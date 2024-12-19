@@ -18,7 +18,7 @@ def number_of_beer_per_style(df_ratings: pd.DataFrame) -> pd.DataFrame:
         ],
         axis=1,
     ).drop(["beer_global_style", "beer_id"], axis=1)
-    df_new_beer_per_day_style = (
+    df_new_beer_per_date_day_style = (
         df_beer_first_app.groupby("date_day")
         .sum()
         .sort_values(by="date_day")
@@ -26,8 +26,8 @@ def number_of_beer_per_style(df_ratings: pd.DataFrame) -> pd.DataFrame:
     )
     df_current_beer_per_style = pd.concat(
         [
-            df_new_beer_per_day_style["date_day"],
-            df_new_beer_per_day_style.drop("date_day", axis=1).cumsum(),
+            df_new_beer_per_date_day_style["date_day"],
+            df_new_beer_per_date_day_style.drop("date_day", axis=1).cumsum(),
         ],
         axis=1,
     )
@@ -159,10 +159,10 @@ def add_experts(
     return df_users_past_beer_style, local_knowledge_quantile_expert
 
 
-def get_expert_per_day(
+def get_expert_per_date_day(
     df_ratings: pd.DataFrame,
     df_users_past_beer_style: pd.DataFrame,
-    max_available_beer_per_day: pd.DataFrame,
+    max_available_beer_per_date_day: pd.DataFrame,
     expert_columns: list,
     count_columns: list,
 ) -> pd.DataFrame:
@@ -179,7 +179,7 @@ def get_expert_per_day(
         df_users_past_beer_style[expert_columns].sum(axis=1) >= 1, "user_id"
     ].drop_duplicates()
     df_expert_dates = df_dates.merge(
-        max_available_beer_per_day, how="left", on="date_day"
+        max_available_beer_per_date_day, how="left", on="date_day"
     ).ffill()
     df_expert_dates = df_expert_dates.merge(ever_local_expert, how="cross")
     df_expert_dates = df_expert_dates.merge(
@@ -216,7 +216,7 @@ def get_expert_per_day(
 
     comparison_df = pd.DataFrame(comparison_results).astype(int)
 
-    expert_per_day = (
+    expert_per_date_day = (
         comparison_df.merge(
             filled_expert["date_day"], how="inner", left_index=True, right_index=True
         )
@@ -224,10 +224,10 @@ def get_expert_per_day(
         .sum()
         .reset_index()
     )
-    return expert_per_day
+    return expert_per_date_day
 
 
-def get_global_expert_per_day(
+def get_global_expert_per_date_day(
     df_ratings: pd.DataFrame,
     df_knowledge: pd.DataFrame,
     df_users_past_beer_style: pd.DataFrame,
@@ -291,7 +291,7 @@ def get_global_expert_per_day(
         filled_global_expert["global_knowledge"] >= global_knowledge_quantile_expert
     ).astype(int)
 
-    global_active_user_per_day = (
+    global_active_user_per_date_day = (
         filled_global_expert[["user_id", "date_day", "active_expert"]]
         .groupby(["user_id", "date_day"])
         .max()
@@ -302,4 +302,4 @@ def get_global_expert_per_day(
         .reset_index()
     )
 
-    return global_active_user_per_day
+    return global_active_user_per_date_day
