@@ -302,7 +302,7 @@ def get_beer_required_expert(
     # Get the number of beers to rate from the local knowledge to reach and the number of available beers per style
     max_available_beer_per_day.iloc[:, 1:] = max_available_beer_per_day.iloc[
         :, 1:
-    ] * np.pow(df_local_knowledge_quantile_expert, 3)
+    ] * np.power(df_local_knowledge_quantile_expert, 3)
     # Melt the dataframe to a format better suited for visualisation
     df_beer_required_to_be_expert_long = max_available_beer_per_day.melt(
         id_vars="day", var_name="Beer Style", value_name="Beers to be expert"
