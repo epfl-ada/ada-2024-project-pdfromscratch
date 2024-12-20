@@ -274,6 +274,47 @@ def add_experts(
     return df_users_past_beer_style, df_local_knowledge_quantile_expert
 
 
+def add_novices(
+    df_local_knowledge: pd.DataFrame,
+    df_users_past_beer_style: pd.DataFrame,
+    quantile_thresh: float,
+) -> tuple[pd.DataFrame]:
+    """Adds the novice information to each user for each beer style at the time of the ratings
+
+    Arguments:
+        df_local_knowledge: a pandas dataframe with the local knowledge of the users in each beer style at the time of their ratings
+        df_users_past_beer_style: a pandas dataframe with the past counts of each beer style for the users at the time of rating
+        quantile_thresh: a scalar denoting the quantile chosen to define the share of novice in the population
+
+    Returns:
+        df_users_past_beer_style: a pandas dataframe with the past counts of each beer style for the users at the time of rating
+        df_local_knowledge_quantile_expert: a pandas dataframe with the local knowledge to reach to be an novice
+    """
+    df_best_local_per_user = (
+        df_local_knowledge.iloc[:, :-1].groupby("user_id").max().reset_index()
+    )
+    # Get the threshold of local knowledge to be a novice for each beer style based on the chosen quantile
+    df_local_knowledge_quantile_novice = (
+        df_best_local_per_user.iloc[:, 1:-1]
+        .replace(0, np.nan)
+        .quantile(quantile_thresh)
+    )
+    # Get the information for each user at the time of each rating if they are novice for each style
+    below_percentiles = (
+        df_local_knowledge.iloc[:, :-3]
+        .lt(df_local_knowledge_quantile_novice, axis=1)
+        .astype(int)
+    )
+    # Rename the columns to add the "novice" suffix
+    for col in below_percentiles.columns:
+        below_percentiles.rename(columns={col: col + "_novice"}, inplace=True)
+    # Add the novice information to the main dataframe
+    df_users_past_beer_style = df_users_past_beer_style.merge(
+        below_percentiles, how="inner", left_index=True, right_index=True
+    )
+    return df_users_past_beer_style, df_local_knowledge_quantile_novice
+
+
 def get_beer_required_expert(
     df_user_beer_style_past_ratings: pd.DataFrame,
     df_local_knowledge_quantile_expert: pd.DataFrame,
@@ -353,6 +394,49 @@ def get_expert_count(
     return df_expert_users, df_count_exp, expert_columns
 
 
+def get_novice_count(
+    df_user_beer_style_past_ratings: pd.DataFrame, df_users: pd.DataFrame
+):
+    """Gets dataframes with the number of novice per beer style and country
+
+    Arguments:
+        df_user_beer_style_past_ratings: a pandas dataframe with the past counts of each beer style for the users at the time of rating
+        df_users: a pandas dataframe with information about users including their country
+
+    Returns:
+        df_novice_users: a pandas dataframe with the user who were novices at some point, the beer styles they were novices in and their countries
+        df_count_nov: a pandas dataframe with the the number of unique novice per country
+        novice_columns: a list with the names of the column referring to the novice info of the users in each beer style
+    """
+    novice_columns = [
+        col for col in df_user_beer_style_past_ratings.columns if "novice" in col
+    ]
+
+    # Get the users who were experts at some point and add their countries
+    df_user_beer_style_past_ratings.loc[:, "isNovice"] = (
+        df_user_beer_style_past_ratings[novice_columns].sum(axis=1)
+    )
+    df_novice_users = (
+        df_user_beer_style_past_ratings.loc[
+            df_user_beer_style_past_ratings["isNovice"] >= 1,
+            ["user_id"] + novice_columns,
+        ]
+        .groupby("user_id")
+        .max()
+        .reset_index()
+    )
+    df_novice_users = df_novice_users.merge(
+        df_users[["user_id", "user_country_code", "user_country"]],
+        how="left",
+        on="user_id",
+    )
+
+    # Add the log count of users for better visibility due to the massive count of the USA
+    df_count_nov = df_novice_users["user_country_code"].value_counts().reset_index()
+    df_count_nov["log_count"] = np.log(df_count_nov["count"])
+    return df_novice_users, df_count_nov, novice_columns
+
+
 def get_mean_expert_vs_non(
     df_ratings: pd.DataFrame,
     df_user_beer_style_past_ratings: pd.DataFrame,
@@ -368,7 +452,7 @@ def get_mean_expert_vs_non(
         k: a scalar denoting the number of beers to consider
 
     Returns:
-        df_means_all_styles:
+        df_means_all_styles: a pandas dataframe with the ratings of experts and non-experts users in beer styles on the selected beers
     """
     df_expert_ratings = (
         df_user_beer_style_past_ratings[expert_columns + ["day", "user_id", "beer_id"]]
@@ -405,6 +489,76 @@ def get_mean_expert_vs_non(
         df_means.append(
             df_same_beers[["beer_global_style", "rating", style]].rename(
                 columns={style: "expert"}
+            )
+        )
+    df_means_all_styles = pd.concat(df_means, axis=0)
+    return df_means_all_styles
+
+
+def get_expert_vs_novice(
+    df_ratings: pd.DataFrame,
+    df_user_beer_style_past_ratings: pd.DataFrame,
+    expert_columns: list,
+    novice_columns: list,
+    k: int = 100,
+) -> pd.DataFrame:
+    """Gets the mean ratings for experts and non experts for each beer style
+
+    Arguments:
+        df_ratings: a pandas dataframe with the ratings of the users and the beer style
+        df_user_beer_style_past_ratings: a pandas dataframe with the expertise of each beer style for the users at the time of rating
+        expert_columns: a list with the names of the column referring to the expertise of the users in each beer style
+        expert_columns: a list with the names of the column referring to the novice info of the users in each beer style
+        k: a scalar denoting the number of beers to consider
+
+    Returns:
+        df_means_all_styles: a pandas dataframe with the ratings of experts and novice users in beer styles on the selected beers
+    """
+    df_expert_novice_ratings = (
+        df_user_beer_style_past_ratings[
+            expert_columns + novice_columns + ["day", "user_id", "beer_id"]
+        ]
+        .groupby(["user_id", "day"])
+        .max()
+        .reset_index()
+        .merge(
+            df_ratings[["user_id", "day", "beer_global_style", "rating"]],
+            how="inner",
+            on=["user_id", "day"],
+        )
+    )
+    df_means = []
+    for style in expert_columns:
+        beer_rated_by_experts = df_user_beer_style_past_ratings[
+            (df_user_beer_style_past_ratings[style] == 1)
+        ]["beer_id"].unique()
+        beer_rated_by_novices = df_user_beer_style_past_ratings[
+            (df_user_beer_style_past_ratings[style.replace("expert", "novice")] == 1)
+        ]["beer_id"].unique()
+        top_k_beers = (
+            df_ratings[
+                (df_ratings["beer_global_style"] == style.split("_")[0])
+                & (df_ratings["beer_id"].isin(beer_rated_by_experts))
+                & (df_ratings["beer_id"].isin(beer_rated_by_novices))
+            ][["rating", "beer_id"]]
+            .groupby("beer_id")
+            .count()
+            .reset_index()
+            .sort_values(by="rating", ascending=False)
+            .head(k)["beer_id"]
+            .to_numpy()
+        )
+        df_same_beers = df_expert_novice_ratings[
+            (df_expert_novice_ratings["beer_global_style"] == style.split("_")[0])
+            & (df_expert_novice_ratings["beer_id"].isin(top_k_beers))
+            & (
+                (df_expert_novice_ratings[style] == 1)
+                | (df_expert_novice_ratings[style.replace("expert", "novice")] == 1)
+            )
+        ]
+        df_means.append(
+            df_same_beers[["beer_global_style", "rating", style]].rename(
+                columns={style: "expert_or_novice"}
             )
         )
     df_means_all_styles = pd.concat(df_means, axis=0)
