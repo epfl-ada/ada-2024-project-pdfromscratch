@@ -122,8 +122,8 @@ pip install -r pip_requirements.txt
 │   ├── scripts                         <- Shell scripts
 │
 │
-├── results.ipynb               <- a well-structured notebook showing the results of data exploration for P2
-├── final.ipynb                 <- a well-structured notebook showing our analysis for P3
+├── milestone_2.ipynb               <- a well-structured notebook showing the results of data exploration for P2
+├── milestone_3.ipynb                 <- a well-structured notebook showing our analysis for P3
 │
 ├── .gitignore                  <- List of files ignored by git
 ├── pip_requirements.txt        <- File for installing python dependencies
