@@ -1,5 +1,12 @@
 # 🍻 Truth behind ratings 🍻
 
+## ✨ Data Story
+<br>
+<a href="https://jnsffrt.github.io/CS401-ADA/" style="background-color: #b45309; color: #fef3c7; font-weight: bold; padding: 1rem 2rem; border-radius: 8px;">
+Discover the data story
+</a>
+<br><br>
+
 ##  📄 Abstract
 
 The core of the project is the idea of exploring the influence of various factors on the ratings left by users, so as to gain a better understanding of the final ratings we can consult by visiting Beer Advocate or Rate Beer. In other words, what secrets do the ratings conceal? The goal of the project is therefore to identify several factors that may affect reviews, and to test our hypotheses against the data.
