@@ -2,7 +2,7 @@ import pandas as pd
 import networkx as nx
 
 
-def analyse_relationships(dataframe: pd.DataFrame) -> pd.DataFrame:
+def analyze_relationships(dataframe: pd.DataFrame) -> pd.DataFrame:
     relationships = []
     for group_style in dataframe["beer_global_style"].unique():
         group = dataframe[dataframe["dominant_style"] == group_style]
@@ -31,16 +31,14 @@ def analyse_relationships(dataframe: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(relationships)
 
 
-def create_preference_digraph(dataframe: pd.DataFrame) -> nx.DiGraph:
+def create_preference_digraph(dataframe: pd.DataFrame, num_threshold: int = 200, mean_threshold: float = 0.25) -> nx.DiGraph:
     G = nx.DiGraph()
-
     for _, row in dataframe.iterrows():
-        if row["num_ratings"] > 200 and abs(row["mean_rating"]) > 0.25:
+        if row["num_ratings"] > num_threshold and abs(row["mean_rating"]) > mean_threshold:
             G.add_edge(
                 row["group_style"],
                 row["target_style"],
                 weight=row["num_ratings"],
                 rating=row["mean_rating"],
             )
-
     return G
