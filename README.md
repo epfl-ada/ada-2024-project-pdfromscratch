@@ -101,7 +101,7 @@ Our team consists of 2 members with a background in computer science and 3 with 
 Contributions:
 - Jean : Data preprocessing handling large files, creating the final website, dealing with the research question on the impact of users' preferences
 - Kilian : Analysing and interpreting plots during data exploration, handling NLP analysis, formatting every paragraph to assert consistency
-- Léon : Analysing and interpreting plots during data exploration, finding the expression of knowledge, writing conclusion of data story, checking relevancy of others' analysis
+- Léon : Analysing and interpreting plots during data exploration, finding the expression of knowledge, writing conclusion of data story, past ratings correlation analysis
 - Arthur : Conducting preliminary analysis to select only relevant data for final analysis, writing introduction and interpretations for data story
 - Martin : Finding the expression of knowledge, creating plots for data exploration, handling expert and novices analysis, formatting python scripts
 
